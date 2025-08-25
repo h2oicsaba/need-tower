@@ -1,0 +1,11 @@
+# Generated per-topic SQL files (HU)
+# One filename per line. Relative to questions/sql/
+# Lines starting with # are comments. No empty lines.
+import_hu_bulvar.sql
+import_hu_egyeb.sql
+import_hu_elovilag.sql
+import_hu_etel_ital.sql
+import_hu_film_szinhaz.sql
+import_hu_foldrajz.sql
+import_hu_sport.sql
+import_hu_tortenelem.sql

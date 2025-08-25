@@ -57,3 +57,44 @@ Separate deploy pipeline from same repo: Vercel (web), Supabase (db/functions).
 
 ## Env Parameters
 - NEED_PRICE_MINOR, CURRENCY, PERCENT_REDEEMABLE, MIN_NOTIFY_AMOUNT, DIGEST_DAYS, DIGEST_TIME
+ 
+## Környezetek: DEV és PRD
+
+Az infrastruktúra két, külön Supabase projektet használ: egy DEV (fejlesztői) és egy PRD (éles) projektet. A frontend (Next.js) futtatása és a funkciók tesztelése a DEV projektre mutat; az éles Vercel deploy a PRD projektre.
+
+* __Supabase projektek__
+  - __DEV__: külön Supabase projekt fejlesztéshez. Itt történik a fejlesztői adatbázis, RLS, Edge Functions és Realtime tesztelése.
+  - __PRD__: külön Supabase projekt éles adatokkal és Edge Functions verziókkal.
+  - A két projekt teljesen különálló. A kliensoldali Next.js csak az anon kulcsot használja; a service role kulcs soha nem kerül a kliensbe.
+
+* __Kliens környezeti változók (Next.js)__
+  - Kötelező változók: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+  - __DEV__: az értékeket az `apps/web/.env.local` fájlban adjuk meg (a DEV Supabase projekt URL-je és anon kulcsa).
+  - __PRD__: Vercelben, a projekt környezeti változóiban állítjuk be (a PRD Supabase projekt URL-je és anon kulcsa).
+  - Opcionális: lokális prod preview-hoz használható `apps/web/.env.production.local` PRD értékekkel.
+  - Verziózott példa: `apps/web/.env.local.example` (másold át `.env.local` néven és töltsd ki DEV értékekkel).
+  - Vercel viselkedés: a Vercel NEM olvassa a repo-ban lévő `.env*` fájlokat build/futás közben. A PRD (és Preview/Development) értékeket a Vercel Project Settings → Environment Variables alatt kell megadni. Production deploy esetén ezek az értékek lesznek injektálva.
+  - Lokális profilok: fejlesztésnél a Next.js a `.env.local`-t használja; prod módban (lokális preview) a `.env.production.local` lép életbe (`pnpm --filter web build && pnpm --filter web start`).
+  - Ajánlás: tarts két helyi fájlt (DEV: `.env.local`, PRD lokális preview: `.env.production.local`). Élesben mindig a Vercel dashboard változói döntenek.
+
+* __Fejlesztői futtatás (DEV)__
+  - Csomagkezelő: `pnpm` (monorepo, Turborepo).
+  - Telepítés a repo gyökerében: `pnpm install`.
+  - Indítás csak a web appra: `pnpm --filter web dev` (a `apps/web/package.json` `dev` scriptje `next dev`).
+  - Alternatíva: gyökérben `pnpm dev` (ha a Turborepo config a webet is figyeli).
+  - __Port__: alapértelmezetten 3000 (`http://localhost:3000`). Felülírható a `PORT` env-vel.
+
+* __Edge Functions és adatbázis__
+  - __DEV__: a fejlesztés a DEV Supabase projekten történik. Módosítások: `supabase db push` és `supabase functions deploy <name>` a DEV projektre mutató bejelentkezéssel.
+  - __PRD__: release előtt migrációk futtatása és Edge Functions deploy a PRD projektre.
+
+* __Deployment útvonal__
+  - __Frontend (PRD)__: Vercel. A környezeti változók PRD értékekkel a Vercelben vannak beállítva. Build: Next 14 App Router.
+  - __Backend (PRD)__: Supabase (Postgres + Edge Functions). CI/CD: `supabase db push`, `supabase functions deploy`.
+
+* __Összefoglaló parancsok__
+  - Telepítés: `pnpm install`
+  - DEV indítás: `pnpm --filter web dev` → http://localhost:3000
+  - Build: `pnpm --filter web build`
+  - Start (prod mód lokálisan): `pnpm --filter web start` (építés után)
+

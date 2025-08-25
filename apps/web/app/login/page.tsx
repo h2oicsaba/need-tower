@@ -2,18 +2,40 @@
 
 import { useState, FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setMessage(error.message);
-    else setMessage('Logged in');
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setMessage('Logged in');
+
+    // After login, try to upsert any pending profile stored at registration time
+    try {
+      const raw = localStorage.getItem('pendingProfile');
+      if (raw) {
+        const payload = JSON.parse(raw);
+        const session = (await supabase.auth.getSession()).data.session;
+        const userId = session?.user?.id;
+        if (userId) {
+          await supabase.from('profiles').upsert({ user_id: userId, ...payload });
+        }
+        localStorage.removeItem('pendingProfile');
+      }
+    } catch {}
+
+    // Redirect to home (or dashboard)
+    router.push('/');
   };
 
   return (
