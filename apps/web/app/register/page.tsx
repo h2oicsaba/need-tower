@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
-  const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.draco.glb');
+  const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.glb');
 
   const playWave = () => {
     const mv = modelViewerRef.current as any;
@@ -27,11 +27,14 @@ export default function RegisterPage() {
       if (avatarGender === 'girl') {
         // Swap to waving clip source, then play and revert when finished
         const onLoaded = () => {
+          // play once (disable looping)
+          try { mv.animationLoop = false; } catch {}
           try { mv.currentTime = 0; } catch {}
           try { mv.play?.(); } catch {}
         };
         const onFinished = () => {
-          setGirlSrc('/avatars/female.draco.glb');
+          setGirlSrc('/avatars/female.glb');
+          try { mv.animationLoop = true; } catch {}
           try {
             mv.removeEventListener?.('finished', onFinished);
           } catch {}
@@ -66,7 +69,7 @@ export default function RegisterPage() {
 
   // Reset girl's default src when gender changes to girl
   useEffect(() => {
-    if (avatarGender === 'girl') setGirlSrc('/avatars/female.draco.glb');
+    if (avatarGender === 'girl') setGirlSrc('/avatars/female.glb');
   }, [avatarGender]);
 
   // Load <model-viewer> web component only on client for avatar preview
@@ -254,7 +257,7 @@ export default function RegisterPage() {
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
                     ref={modelViewerRef}
-                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : girlSrc.replace(/^\/avatars\//, '')}`}
+                    src={`${avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc}`}
                     camera-controls
                     auto-rotate
                     {...(avatarGender === 'boy' ? { autoplay: true } : {})}
