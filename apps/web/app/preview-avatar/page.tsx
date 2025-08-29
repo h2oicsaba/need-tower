@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 const SOURCES = {
-  male: "/avatars/male.glb",
-  female: "/avatars/female.glb",
+  male: "/avatars/male.comp.glb",
+  female: "/avatars/female.comp.glb",
 } as const;
 
 type Sex = keyof typeof SOURCES;
