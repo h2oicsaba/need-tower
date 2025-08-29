@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -17,6 +17,19 @@ export default function RegisterPage() {
   const [avatarName, setAvatarName] = useState('');
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
+  const modelViewerRef = useRef<any>(null);
+
+  const playWave = () => {
+    const mv = modelViewerRef.current as any;
+    if (!mv) return;
+    try {
+      // Ensure animation starts from beginning and plays once on demand
+      if (typeof mv.pause === 'function') mv.pause();
+      // Try to reset time to 0 (supported in model-viewer)
+      try { mv.currentTime = 0; } catch {}
+      if (typeof mv.play === 'function') mv.play();
+    } catch {}
+  };
 
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
@@ -200,12 +213,14 @@ export default function RegisterPage() {
             {avatarGender && (
               <div className="mt-3">
                 <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2">
                   <model-viewer
-                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : 'female.draco.glb'}`}
+                    ref={modelViewerRef}
+                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : 'female_waving.glb'}`}
                     camera-controls
                     auto-rotate
-                    autoplay
+                    // Only autoplay for boy (keeps previous behavior). For girl, play via button.
+                    autoplay={avatarGender === 'boy'}
                     exposure="1"
                     interaction-prompt="none"
                     disable-pan
@@ -214,6 +229,17 @@ export default function RegisterPage() {
                     min-camera-orbit="auto 90deg auto"
                     max-camera-orbit="auto 90deg auto"
                   />
+                  {avatarGender === 'girl' && (
+                    <button
+                      type="button"
+                      onClick={playWave}
+                      className="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-700"
+                      aria-label="Helló animáció lejátszása"
+                      title="Helló"
+                    >
+                      Helló
+                    </button>
+                  )}
                 </div>
               </div>
             )}
