@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -17,6 +17,17 @@ export default function RegisterPage() {
   const [avatarName, setAvatarName] = useState('');
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
+
+  // Load <model-viewer> web component only on client for avatar preview
+  useEffect(() => {
+    const el = document.createElement('script');
+    el.type = 'module';
+    el.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+    document.head.appendChild(el);
+    return () => {
+      try { document.head.removeChild(el); } catch {}
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,17 +84,17 @@ export default function RegisterPage() {
           <input
             className="w-1/2 border p-2"
             type="text"
-            placeholder="Keresztnév*"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Vezetéknév*"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             required
           />
           <input
             className="w-1/2 border p-2"
             type="text"
-            placeholder="Vezetéknév*"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Keresztnév*"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             required
           />
         </div>
@@ -142,6 +153,26 @@ export default function RegisterPage() {
           <option value="boy">Fiú</option>
           <option value="girl">Lány</option>
         </select>
+        {avatarGender && (
+          <div className="mb-4">
+            <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
+            <div className="flex justify-center">
+              <model-viewer
+                src={`/avatars/${avatarGender === 'boy' ? 'male' : 'female'}.glb`}
+                camera-controls
+                auto-rotate
+                autoplay
+                exposure="1"
+                interaction-prompt="none"
+                disable-pan
+                style={{ width: 260, height: 340 }}
+                /* Lock polar angle to 90deg so it only yaws (Y-axis), no tilting */
+                min-camera-orbit="auto 90deg auto"
+                max-camera-orbit="auto 90deg auto"
+              />
+            </div>
+          </div>
+        )}
         <label className="mb-1 block text-sm font-medium">Email*</label>
         <input
           className="mb-2 w-full border p-2"
