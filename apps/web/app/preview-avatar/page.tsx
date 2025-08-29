@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 const SOURCES = {
-  male: "/avatars/male.glb",
-  female: "/avatars/female.glb",
+  male: "/avatars/male.comp.glb",
+  female: "/avatars/female.comp.glb",
 } as const;
 
 type Sex = keyof typeof SOURCES;
@@ -39,17 +39,31 @@ export default function PreviewAvatarPage() {
           <option value="female">Nő</option>
         </select>
       </div>
+      <div className="w-full max-w-3xl rounded border bg-black/5">
+        <div
+          className="relative w-full touch-none overscroll-contain"
+          style={{ aspectRatio: "16 / 9" }}
+        >
+          <model-viewer
+            src={SOURCES[sex]}
+            camera-controls
+            auto-rotate
+            autoplay
+            exposure="1"
+            style={{ width: "100%", height: "100%" }}
+            interaction-prompt="none"
+            /* Lock polar angle to 90deg so rotation is only around Y axis */
+            min-camera-orbit="auto 90deg auto"
+            max-camera-orbit="auto 90deg auto"
+            ar
+          />
+        </div>
+      </div>
 
-      <model-viewer
-        src={SOURCES[sex]}
-        camera-controls
-        auto-rotate
-        autoplay
-        exposure="1"
-        style={{ width: 320, height: 420 }}
-        interaction-prompt="none"
-        ar
-      />
+      <div className="text-xs text-gray-500">
+        Tipp: nagyíts rá, majd húzd két ujjal vagy jobb egérgombbal felfelé/lefelé a
+        pannoláshoz (arc/láb nézet).
+      </div>
 
       <p className="text-xs text-gray-500">
         Tippek: egérrel/ujjal forgatható, a GLB-ket tedd a {" "}
