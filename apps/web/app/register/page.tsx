@@ -18,18 +18,56 @@ export default function RegisterPage() {
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
+  const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.draco.glb');
 
   const playWave = () => {
     const mv = modelViewerRef.current as any;
     if (!mv) return;
     try {
-      // Ensure animation starts from beginning and plays once on demand
-      if (typeof mv.pause === 'function') mv.pause();
-      // Try to reset time to 0 (supported in model-viewer)
-      try { mv.currentTime = 0; } catch {}
-      if (typeof mv.play === 'function') mv.play();
+      if (avatarGender === 'girl') {
+        // Swap to waving clip source, then play and revert when finished
+        const onLoaded = () => {
+          try { mv.currentTime = 0; } catch {}
+          try { mv.play?.(); } catch {}
+        };
+        const onFinished = () => {
+          setGirlSrc('/avatars/female.draco.glb');
+          try {
+            mv.removeEventListener?.('finished', onFinished);
+          } catch {}
+        };
+        setGirlSrc('/avatars/female_waving.glb');
+        // Attach listeners once the new src loads
+        mv.addEventListener?.('load', onLoaded, { once: true });
+        mv.addEventListener?.('finished', onFinished, { once: true });
+      } else {
+        // Boy: just ensure restart
+        if (typeof mv.pause === 'function') mv.pause();
+        try { mv.currentTime = 0; } catch {}
+        if (typeof mv.play === 'function') mv.play();
+      }
     } catch {}
   };
+
+  // Ensure girl does not autoplay: pause once the model loads/changes
+  useEffect(() => {
+    const mv = modelViewerRef.current as any;
+    if (!mv) return;
+    if (avatarGender === 'girl') {
+      // When element upgrades/loads, pause to avoid any default playback
+      const pauseNow = () => { try { mv.pause?.(); } catch {} };
+      pauseNow();
+      mv.addEventListener?.('load', pauseNow, { once: true });
+      return () => {
+        try { mv.removeEventListener?.('load', pauseNow); } catch {}
+      };
+    }
+  }, [avatarGender]);
+
+  // Reset girl's default src when gender changes to girl
+  useEffect(() => {
+    if (avatarGender === 'girl') setGirlSrc('/avatars/female.draco.glb');
+  }, [avatarGender]);
 
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
@@ -216,11 +254,10 @@ export default function RegisterPage() {
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
                     ref={modelViewerRef}
-                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : 'female_waving.glb'}`}
+                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : girlSrc.replace(/^\/avatars\//, '')}`}
                     camera-controls
                     auto-rotate
-                    // Only autoplay for boy (keeps previous behavior). For girl, play via button.
-                    autoplay={avatarGender === 'boy'}
+                    {...(avatarGender === 'boy' ? { autoplay: true } : {})}
                     exposure="1"
                     interaction-prompt="none"
                     disable-pan
