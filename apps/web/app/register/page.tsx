@@ -202,7 +202,7 @@ export default function RegisterPage() {
                 <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
                 <div className="flex justify-center">
                   <model-viewer
-                    src={`/avatars/${avatarGender === 'boy' ? 'male.glb' : 'female.glb'}`}
+                    src={`/avatars/${avatarGender === 'boy' ? 'male.draco.glb' : 'female.draco.glb'}`}
                     camera-controls
                     auto-rotate
                     autoplay
