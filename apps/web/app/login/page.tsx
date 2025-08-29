@@ -29,6 +29,12 @@ export default function LoginPage() {
         const userId = session?.user?.id;
         if (userId) {
           await supabase.from('profiles').upsert({ user_id: userId, ...payload });
+          if (payload?.avatar_name && typeof payload.avatar_name === 'string' && payload.avatar_name.trim()) {
+            await supabase.rpc('generate_avatar_handle', {
+              p_user_id: userId,
+              p_avatar_name: payload.avatar_name.trim(),
+            });
+          }
         }
         localStorage.removeItem('pendingProfile');
       }

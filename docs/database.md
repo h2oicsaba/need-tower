@@ -22,6 +22,13 @@ Important constraints and indexes:
 
 Applied to DEV via MCP as a migration: `question_db_init`.
 
+### DEV-only rule: drop-and-recreate for fast iteration
+
+- During active development, some tables (e.g., `public.profiles` in `sql/profile_db.sql`) are dropped and recreated to reflect current fields without ALTER chains.
+- This is safe in DEV where data can be reset. Do not run destructive DDL on PRD.
+- After dropping tables, always re-apply RLS, grants, and triggers from `sql/db_auth.sql`.
+ - Profile mezők elnevezése angol: `postal_code`, `country`, `avatar_name`, `avatar_gender`. Az `avatar_gender` engedélyezett értékei: `'boy' | 'girl'`.
+
 ## Data (DML) per-topic imports
 
 Per-topic data import SQL files are generated in `sql/quiz/` with names like `import_hu_<topic>.sql`.

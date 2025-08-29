@@ -9,9 +9,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const country = 'Hungary';
+  const [avatarName, setAvatarName] = useState('');
+  const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
@@ -27,9 +30,12 @@ export default function RegisterPage() {
     const profilePayload = {
       first_name: firstName || null,
       last_name: lastName || null,
-      username: username || null,
       address: address || null,
       city: city || null,
+      postal_code: postalCode || null,
+      country: country,
+      avatar_name: avatarName || null,
+      avatar_gender: avatarGender || null,
     } as const;
 
     if (session?.user) {
@@ -37,8 +43,15 @@ export default function RegisterPage() {
         .from('profiles')
         .upsert({ user_id: session.user.id, ...profilePayload });
       if (upsertErr) {
-        setMessage(`Registered, but profile save failed: ${upsertErr.message}`);
+        setMessage(upsertErr.message);
         return;
+      }
+      // Generate unique avatar_handle if avatarName provided
+      if (avatarName && avatarName.trim()) {
+        await supabase.rpc('generate_avatar_handle', {
+          p_user_id: session.user.id,
+          p_avatar_name: avatarName.trim(),
+        });
       }
       setMessage('Registered and profile saved. You can continue.');
     } else {
@@ -59,52 +72,92 @@ export default function RegisterPage() {
           <input
             className="w-1/2 border p-2"
             type="text"
-            placeholder="Keresztnév"
+            placeholder="Keresztnév*"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
+            required
           />
           <input
             className="w-1/2 border p-2"
             type="text"
-            placeholder="Vezetéknév"
+            placeholder="Vezetéknév*"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
+            required
           />
         </div>
+        <label className="mb-1 block text-sm font-medium">Cím*</label>
         <input
           className="mb-2 w-full border p-2"
           type="text"
-          placeholder="Felhasználónév"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          className="mb-2 w-full border p-2"
-          type="text"
-          placeholder="Cím"
+          placeholder="Utca, házszám"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
+          required
         />
+        <label className="mb-1 block text-sm font-medium">Város*</label>
         <input
           className="mb-2 w-full border p-2"
           type="text"
-          placeholder="Város"
+          placeholder="Település"
           value={city}
           onChange={(e) => setCity(e.target.value)}
+          required
         />
+        <label className="mb-1 block text-sm font-medium">Irányítószám*</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="4 számjegy"
+          value={postalCode}
+          onChange={(e) => setPostalCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+          inputMode="numeric"
+          pattern="[0-9]{4}"
+          required
+        />
+        <label className="mb-1 block text-sm font-medium">Ország*</label>
+        <select
+          className="mb-2 w-full border p-2 bg-gray-100 text-gray-700"
+          value={country}
+          disabled
+        >
+          <option value="Hungary">Magyarország</option>
+        </select>
+        <label className="mb-1 block text-sm font-medium">Avatar név</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="Megjelenített név"
+          value={avatarName}
+          onChange={(e) => setAvatarName(e.target.value)}
+        />
+        <label className="mb-1 block text-sm font-medium">Avatar nem</label>
+        <select
+          className="mb-2 w-full border p-2"
+          value={avatarGender}
+          onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
+        >
+          <option value="">Válassz avatar nemet</option>
+          <option value="boy">Fiú</option>
+          <option value="girl">Lány</option>
+        </select>
+        <label className="mb-1 block text-sm font-medium">Email*</label>
         <input
           className="mb-2 w-full border p-2"
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
+        <label className="mb-1 block text-sm font-medium">Jelszó*</label>
         <input
           className="mb-4 w-full border p-2"
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button className="w-full bg-blue-500 p-2 text-white" type="submit">Register</button>
         <p className="mt-4 text-center">
