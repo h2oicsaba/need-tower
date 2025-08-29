@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 
 const SOURCES = {
-  male: "/avatars/male.comp.glb",
-  female: "/avatars/female.comp.glb",
+  male: "/avatars/male.glb",
+  female: "/avatars/female.glb",
 } as const;
 
 type Sex = keyof typeof SOURCES;
 
 export default function PreviewAvatarPage() {
   const [sex, setSex] = useState<Sex>("male");
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   // Load the web component only on the client
   useEffect(() => {
@@ -24,30 +23,6 @@ export default function PreviewAvatarPage() {
       document.head.removeChild(el);
     };
   }, []);
-
-  // Resolve avatar source with fallback
-  useEffect(() => {
-    let cancelled = false;
-    async function resolve() {
-      const base = sex;
-      const tryUrls = [
-        `/avatars/${base}.comp.glb`,
-        `/avatars/${base}.glb`,
-      ];
-      for (const url of tryUrls) {
-        try {
-          const res = await fetch(url, { method: "HEAD" });
-          if (!cancelled && res.ok) {
-            setAvatarSrc(url);
-            return;
-          }
-        } catch {}
-      }
-      if (!cancelled) setAvatarSrc(null);
-    }
-    resolve();
-    return () => { cancelled = true; };
-  }, [sex]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-4">
@@ -64,37 +39,17 @@ export default function PreviewAvatarPage() {
           <option value="female">Nő</option>
         </select>
       </div>
-      <div className="w-full max-w-3xl rounded border bg-black/5">
-        <div
-          className="relative w-full touch-none overscroll-contain"
-          style={{ aspectRatio: "16 / 9" }}
-        >
-          {avatarSrc ? (
-            <model-viewer
-              src={avatarSrc}
-              camera-controls
-              auto-rotate
-              autoplay
-              exposure="1"
-              style={{ width: "100%", height: "100%" }}
-              interaction-prompt="none"
-              /* Lock polar angle to 90deg so rotation is only around Y axis */
-              min-camera-orbit="auto 90deg auto"
-              max-camera-orbit="auto 90deg auto"
-              ar
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
-              Avatar fájl nem található.
-            </div>
-          )}
-        </div>
-      </div>
 
-      <div className="text-xs text-gray-500">
-        Tipp: nagyíts rá, majd húzd két ujjal vagy jobb egérgombbal felfelé/lefelé a
-        pannoláshoz (arc/láb nézet).
-      </div>
+      <model-viewer
+        src={SOURCES[sex]}
+        camera-controls
+        auto-rotate
+        autoplay
+        exposure="1"
+        style={{ width: 320, height: 420 }}
+        interaction-prompt="none"
+        ar
+      />
 
       <p className="text-xs text-gray-500">
         Tippek: egérrel/ujjal forgatható, a GLB-ket tedd a {" "}

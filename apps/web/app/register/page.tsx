@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const [avatarName, setAvatarName] = useState('');
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
@@ -29,31 +28,6 @@ export default function RegisterPage() {
       try { document.head.removeChild(el); } catch {}
     };
   }, []);
-
-  // Resolve avatar source with fallback: prefer .comp.glb, then .glb
-  useEffect(() => {
-    let cancelled = false;
-    async function resolve() {
-      if (!avatarGender) {
-        setAvatarSrc(null);
-        return;
-      }
-      const base = avatarGender === 'boy' ? 'male' : 'female';
-      const tryUrls = [`/avatars/${base}.comp.glb`, `/avatars/${base}.glb`];
-      for (const url of tryUrls) {
-        try {
-          const res = await fetch(url, { method: 'HEAD' });
-          if (!cancelled && res.ok) {
-            setAvatarSrc(url);
-            return;
-          }
-        } catch {}
-      }
-      if (!cancelled) setAvatarSrc(null);
-    }
-    resolve();
-    return () => { cancelled = true; };
-  }, [avatarGender]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -102,169 +76,141 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-start justify-center p-4">
-      <div className="flex w-full max-w-5xl flex-col gap-6 md:flex-row">
-        {/* Bal oszlop: űrlap */}
-        <form onSubmit={handleSubmit} className="w-full md:max-w-sm" autoComplete="off">
-          <h1 className="mb-4 text-2xl font-bold">Register</h1>
-          {message && <p className="mb-2 text-red-500">{message}</p>}
-
-          <div className="mb-2 flex gap-2">
-            <input
-              className="w-1/2 border p-2"
-              type="text"
-              placeholder="Vezetéknév*"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
-            <input
-              className="w-1/2 border p-2"
-              type="text"
-              placeholder="Keresztnév*"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
-          </div>
-
-          <label className="mb-1 block text-sm font-medium">Cím*</label>
+    <div className="flex h-screen items-center justify-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-xs" autoComplete="off">
+        <h1 className="mb-4 text-2xl font-bold">Register</h1>
+        {message && <p className="mb-2 text-red-500">{message}</p>}
+        <div className="mb-2 flex gap-2">
           <input
-            className="mb-2 w-full border p-2"
+            className="w-1/2 border p-2"
             type="text"
-            placeholder="Utca, házszám"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            placeholder="Vezetéknév*"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             required
           />
-
-          <label className="mb-1 block text-sm font-medium">Város*</label>
           <input
-            className="mb-2 w-full border p-2"
+            className="w-1/2 border p-2"
             type="text"
-            placeholder="Település"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+            placeholder="Keresztnév*"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             required
           />
-
-          <label className="mb-1 block text-sm font-medium">Irányítószám*</label>
-          <input
-            className="mb-2 w-full border p-2"
-            type="text"
-            placeholder="4 számjegy"
-            value={postalCode}
-            onChange={(e) => setPostalCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
-            inputMode="numeric"
-            pattern="[0-9]{4}"
-            required
-          />
-
-          <label className="mb-1 block text-sm font-medium">Ország*</label>
-          <select
-            className="mb-2 w-full border p-2 bg-gray-100 text-gray-700"
-            value={country}
-            disabled
-          >
-            <option value="Hungary">Magyarország</option>
-          </select>
-
-          <label className="mb-1 block text-sm font-medium">Avatar név</label>
-          <input
-            className="mb-2 w-full border p-2"
-            type="text"
-            placeholder="Megjelenített név"
-            value={avatarName}
-            onChange={(e) => setAvatarName(e.target.value)}
-          />
-
-          <label className="mb-1 block text-sm font-medium">Avatar nem</label>
-          <select
-            className="mb-4 w-full border p-2"
-            value={avatarGender}
-            onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
-          >
-            <option value="">Válassz avatar nemet</option>
-            <option value="boy">Fiú</option>
-            <option value="girl">Lány</option>
-          </select>
-
-          <label className="mb-1 block text-sm font-medium">Email*</label>
-          <input
-            className="mb-2 w-full border p-2"
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            name="email"
-            autoComplete="email"
-            required
-          />
-
-          <label className="mb-1 block text-sm font-medium">Jelszó*</label>
-          <div className="mb-4 flex items-center gap-2">
-            <input
-              className="w-full border p-2"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              name="new-password"
-              autoComplete="new-password"
-              required
-            />
-            <button
-              type="button"
-              className="shrink-0 rounded border px-2 py-1 text-sm"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
-              title={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
-            >
-              {showPassword ? 'Elrejt' : 'Mutat'}
-            </button>
-          </div>
-
-          <button className="w-full bg-blue-500 p-2 text-white" type="submit">Register</button>
-          <p className="mt-4 text-center">
-            Already have an account? <Link href="/login" className="text-blue-500">Login</Link>
-          </p>
-        </form>
-
-        {/* Jobb oszlop: 16:9 avatar előnézet */}
-        <div className="flex w-full flex-1 flex-col">
-          <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
-          <div className="w-full rounded border bg-black/5">
-            <div
-              className="relative w-full touch-none overscroll-contain"
-              style={{ aspectRatio: '9 / 16' }}
-            >
-              {avatarGender ? (
-                <model-viewer
-                  src={avatarSrc ?? ''}
-                  camera-controls
-                  auto-rotate
-                  autoplay
-                  exposure="1"
-                  interaction-prompt="none"
-                  style={{ width: '100%', height: '100%' }}
-                  /* Y-tengelyes forgatás: polar szög rögzítése vízszintes nézetre */
-                  min-camera-orbit="auto 90deg auto"
-                  max-camera-orbit="auto 90deg auto"
-                  /* Pan engedélyezett (alapértelmezés), hogy fejre/cipőre rá lehessen mozdulni zoom után */
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-                  Válassz avatar nemet a bal oldalon…
-                </div>
-              )}
+        </div>
+        <label className="mb-1 block text-sm font-medium">Cím*</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="Utca, házszám"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          required
+        />
+        <label className="mb-1 block text-sm font-medium">Város*</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="Település"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          required
+        />
+        <label className="mb-1 block text-sm font-medium">Irányítószám*</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="4 számjegy"
+          value={postalCode}
+          onChange={(e) => setPostalCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+          inputMode="numeric"
+          pattern="[0-9]{4}"
+          required
+        />
+        <label className="mb-1 block text-sm font-medium">Ország*</label>
+        <select
+          className="mb-2 w-full border p-2 bg-gray-100 text-gray-700"
+          value={country}
+          disabled
+        >
+          <option value="Hungary">Magyarország</option>
+        </select>
+        <label className="mb-1 block text-sm font-medium">Avatar név</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="text"
+          placeholder="Megjelenített név"
+          value={avatarName}
+          onChange={(e) => setAvatarName(e.target.value)}
+        />
+        <label className="mb-1 block text-sm font-medium">Avatar nem</label>
+        <select
+          className="mb-2 w-full border p-2"
+          value={avatarGender}
+          onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
+        >
+          <option value="">Válassz avatar nemet</option>
+          <option value="boy">Fiú</option>
+          <option value="girl">Lány</option>
+        </select>
+        {avatarGender && (
+          <div className="mb-4">
+            <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
+            <div className="flex justify-center">
+              <model-viewer
+                src={`/avatars/${avatarGender === 'boy' ? 'male' : 'female'}.glb`}
+                camera-controls
+                auto-rotate
+                autoplay
+                exposure="1"
+                interaction-prompt="none"
+                disable-pan
+                style={{ width: 260, height: 340 }}
+                /* Lock polar angle to 90deg so it only yaws (Y-axis), no tilting */
+                min-camera-orbit="auto 90deg auto"
+                max-camera-orbit="auto 90deg auto"
+              />
             </div>
           </div>
-          <div className="mt-2 text-xs text-gray-500">
-            Tipp: nagyíts rá, majd húzd két ujjal vagy jobb egérgombbal felfelé/lefelé a
-            pannoláshoz (arc/láb nézet).
-          </div>
+        )}
+        <label className="mb-1 block text-sm font-medium">Email*</label>
+        <input
+          className="mb-2 w-full border p-2"
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          autoComplete="email"
+          required
+        />
+        <label className="mb-1 block text-sm font-medium">Jelszó*</label>
+        <div className="mb-4 flex items-center gap-2">
+          <input
+            className="w-full border p-2"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            name="new-password"
+            autoComplete="new-password"
+            required
+          />
+          <button
+            type="button"
+            className="shrink-0 rounded border px-2 py-1 text-sm"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
+            title={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
+          >
+            {showPassword ? 'Elrejt' : 'Mutat'}
+          </button>
         </div>
-      </div>
+        <button className="w-full bg-blue-500 p-2 text-white" type="submit">Register</button>
+        <p className="mt-4 text-center">
+          Already have an account? <Link href="/login" className="text-blue-500">Login</Link>
+        </p>
+      </form>
     </div>
   );
 }
