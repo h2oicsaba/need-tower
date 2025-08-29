@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [address, setAddress] = useState('');
@@ -65,7 +66,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-xs">
+      <form onSubmit={handleSubmit} className="w-full max-w-xs" autoComplete="off">
         <h1 className="mb-4 text-2xl font-bold">Register</h1>
         {message && <p className="mb-2 text-red-500">{message}</p>}
         <div className="mb-2 flex gap-2">
@@ -148,17 +149,32 @@ export default function RegisterPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          autoComplete="email"
           required
         />
         <label className="mb-1 block text-sm font-medium">Jelszó*</label>
-        <input
-          className="mb-4 w-full border p-2"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="mb-4 flex items-center gap-2">
+          <input
+            className="w-full border p-2"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            name="new-password"
+            autoComplete="new-password"
+            required
+          />
+          <button
+            type="button"
+            className="shrink-0 rounded border px-2 py-1 text-sm"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
+            title={showPassword ? 'Jelszó elrejtése' : 'Jelszó megjelenítése'}
+          >
+            {showPassword ? 'Elrejt' : 'Mutat'}
+          </button>
+        </div>
         <button className="w-full bg-blue-500 p-2 text-white" type="submit">Register</button>
         <p className="mt-4 text-center">
           Already have an account? <Link href="/login" className="text-blue-500">Login</Link>
