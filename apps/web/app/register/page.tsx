@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [avatarName, setAvatarName] = useState('');
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   const [message, setMessage] = useState('');
+  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
@@ -28,6 +29,31 @@ export default function RegisterPage() {
       try { document.head.removeChild(el); } catch {}
     };
   }, []);
+
+  // Resolve avatar source with fallback: prefer .comp.glb, then .glb
+  useEffect(() => {
+    let cancelled = false;
+    async function resolve() {
+      if (!avatarGender) {
+        setAvatarSrc(null);
+        return;
+      }
+      const base = avatarGender === 'boy' ? 'male' : 'female';
+      const tryUrls = [`/avatars/${base}.comp.glb`, `/avatars/${base}.glb`];
+      for (const url of tryUrls) {
+        try {
+          const res = await fetch(url, { method: 'HEAD' });
+          if (!cancelled && res.ok) {
+            setAvatarSrc(url);
+            return;
+          }
+        } catch {}
+      }
+      if (!cancelled) setAvatarSrc(null);
+    }
+    resolve();
+    return () => { cancelled = true; };
+  }, [avatarGender]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -210,11 +236,11 @@ export default function RegisterPage() {
           <div className="w-full rounded border bg-black/5">
             <div
               className="relative w-full touch-none overscroll-contain"
-              style={{ aspectRatio: '16 / 9' }}
+              style={{ aspectRatio: '9 / 16' }}
             >
               {avatarGender ? (
                 <model-viewer
-                  src={`/avatars/${avatarGender === 'boy' ? 'male' : 'female'}.comp.glb`}
+                  src={avatarSrc ?? ''}
                   camera-controls
                   auto-rotate
                   autoplay
