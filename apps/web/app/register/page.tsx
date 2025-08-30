@@ -135,7 +135,61 @@ export default function RegisterPage() {
         <h1 className="mb-6 text-2xl font-bold">Regisztráció</h1>
         {message && <p className="mb-4 text-red-500">{message}</p>}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Bal oszlop: kötelező személyes mezők + belépési adatok */}
+          {/* Bal oszlop: Avatar név, nem, előnézet */}
+          <div>
+            <label className="mb-1 block text-sm font-medium">Avatar név</label>
+            <input
+              className="mb-2 w-full border p-2"
+              type="text"
+              placeholder="Megjelenített név"
+              value={avatarName}
+              onChange={(e) => setAvatarName(e.target.value)}
+            />
+            <label className="mb-1 block text-sm font-medium">Avatar nem</label>
+            <select
+              className="mb-2 w-full border p-2"
+              value={avatarGender}
+              onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
+            >
+              <option value="">Válassz avatar nemet</option>
+              <option value="boy">Fiú</option>
+              <option value="girl">Lány</option>
+            </select>
+            {avatarGender && (
+              <div className="mt-3">
+                <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
+                <div className="flex flex-col items-center gap-2">
+                  <model-viewer
+                    ref={modelViewerRef}
+                    src={`${avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc}`}
+                    camera-controls
+                    auto-rotate
+                    {...(avatarGender === 'boy' ? { autoplay: true } : {})}
+                    exposure="1"
+                    interaction-prompt="none"
+                    disable-pan
+                    style={{ width: 280, height: 360 }}
+                    /* Lock polar angle to 90deg so it only yaws (Y-axis), no tilting */
+                    min-camera-orbit="auto 90deg auto"
+                    max-camera-orbit="auto 90deg auto"
+                  />
+                  {avatarGender === 'girl' && (
+                    <button
+                      type="button"
+                      onClick={playWave}
+                      className="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-700"
+                      aria-label="Helló animáció lejátszása"
+                      title="Helló"
+                    >
+                      Helló
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Jobb oszlop: kötelező személyes mezők + belépési adatok */}
           <div>
             <div className="mb-2 flex gap-2">
               <input
@@ -225,66 +279,12 @@ export default function RegisterPage() {
                 {showPassword ? 'Elrejt' : 'Mutat'}
               </button>
             </div>
-            <button className="w-full bg-blue-500 p-2 text-white" type="submit">Regisztráció</button>
-            <p className="mt-4 text-center">
-              Már van fiókod? <Link href="/login" className="text-blue-500">Bejelentkezés</Link>
-            </p>
-          </div>
-
-          {/* Jobb oszlop: Avatar név, nem, előnézet */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Avatar név</label>
-            <input
-              className="mb-2 w-full border p-2"
-              type="text"
-              placeholder="Megjelenített név"
-              value={avatarName}
-              onChange={(e) => setAvatarName(e.target.value)}
-            />
-            <label className="mb-1 block text-sm font-medium">Avatar nem</label>
-            <select
-              className="mb-2 w-full border p-2"
-              value={avatarGender}
-              onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
-            >
-              <option value="">Válassz avatar nemet</option>
-              <option value="boy">Fiú</option>
-              <option value="girl">Lány</option>
-            </select>
-            {avatarGender && (
-              <div className="mt-3">
-                <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
-                <div className="flex flex-col items-center gap-2">
-                  <model-viewer
-                    ref={modelViewerRef}
-                    src={`${avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc}`}
-                    camera-controls
-                    auto-rotate
-                    {...(avatarGender === 'boy' ? { autoplay: true } : {})}
-                    exposure="1"
-                    interaction-prompt="none"
-                    disable-pan
-                    style={{ width: 280, height: 360 }}
-                    /* Lock polar angle to 90deg so it only yaws (Y-axis), no tilting */
-                    min-camera-orbit="auto 90deg auto"
-                    max-camera-orbit="auto 90deg auto"
-                  />
-                  {avatarGender === 'girl' && (
-                    <button
-                      type="button"
-                      onClick={playWave}
-                      className="rounded bg-emerald-600 px-3 py-1 text-white hover:bg-emerald-700"
-                      aria-label="Helló animáció lejátszása"
-                      title="Helló"
-                    >
-                      Helló
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+        <button className="mt-2 w-full bg-blue-500 p-2 text-white" type="submit">Regisztráció</button>
+        <p className="mt-4 text-center">
+          Már van fiókod? <Link href="/login" className="text-blue-500">Bejelentkezés</Link>
+        </p>
       </form>
     </div>
   );
