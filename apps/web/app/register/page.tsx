@@ -19,6 +19,8 @@ export default function RegisterPage() {
   // Új: karakter választás (4 fix opció)
   type CharacterKey = '' | 'okos_toni' | 'bolcs_elemer' | 'zseni_zsuzsi' | 'tudos_tundi';
   const [character, setCharacter] = useState<CharacterKey>('');
+  // Info overlay
+  const [showInfo, setShowInfo] = useState(false);
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
   const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.glb');
@@ -145,7 +147,16 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <form onSubmit={handleSubmit} className="w-full max-w-3xl" autoComplete="off">
-        <h1 className="mb-6 text-2xl font-bold">Regisztráció</h1>
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Regisztráció</h1>
+          <button
+            type="button"
+            className="text-sm text-blue-600 hover:underline"
+            onClick={() => setShowInfo(true)}
+          >
+            Magyarázat a regisztrációhoz
+          </button>
+        </div>
         {message && <p className="mb-4 text-red-500">{message}</p>}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Bal oszlop: Neved a játékban, karakter választás, előnézet */}
@@ -167,14 +178,13 @@ export default function RegisterPage() {
               required
             >
               <option value="">-- Válassz --</option>
-              <option value="okos_toni">Okos Tóni</option>
-              <option value="bolcs_elemer">Bölcs Elemér</option>
-              <option value="zseni_zsuzsi">Zseni Zsuzsi</option>
-              <option value="tudos_tundi">Tudós Tündi</option>
+              <option value="okos_toni">"Okos Tóni"</option>
+              <option value="bolcs_elemer">"Bölcs Elemér"</option>
+              <option value="zseni_zsuzsi">"Zseni Zsuzsi"</option>
+              <option value="tudos_tundi">"Tudós Tündi"</option>
             </select>
             {avatarGender && (
               <div className="mt-3">
-                <div className="mb-2 text-sm text-gray-600">Avatar előnézet</div>
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
                     ref={modelViewerRef}
@@ -300,6 +310,52 @@ export default function RegisterPage() {
         <p className="mt-4 text-center">
           Már van fiókod? <Link href="/login" className="text-blue-500">Bejelentkezés</Link>
         </p>
+        {showInfo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-lg bg-white p-5 shadow-xl">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Magyarázat a regisztrációhoz</h2>
+                <button
+                  type="button"
+                  className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => setShowInfo(false)}
+                  aria-label="Bezárás"
+                >
+                  Bezár
+                </button>
+              </div>
+              <div className="space-y-3 text-sm leading-6 text-gray-800">
+                <div>
+                  <strong>1. Kötelező adatok</strong>
+                  <p>
+                    Az egyszerű regisztráció érdekében csak egy nevet, egy karaktert és az email címedet/jelszavadat kell megadnod –
+                    a település is fontos, hogy barátokra találj, mert azt követjük a felületen. Egyértelművé tesszük, hogy nem adatgyűjtés történik
+                    (cím és teljes név), ezeket majd csak akkor kell megadnod, ha sikerült elsőként feljutnod a toronyba és postáznunk kell neked a terméket.
+                    Addig anonim maradhatsz. A GDPR törvényeket tiszteletben tartva később nyilatkozhatsz, hogy szeretnél-e megjelenni egy fotóval az átvett
+                    nyereménnyel. Ez azért fontos, hogy mindenki lássa: nem kamu az oldal; bárki, aki ügyes stratégiát választ és elsőként jut fel a toronyba,
+                    megilleti az értékes nyeremény. A családneved ekkor is titkos marad. Példa: A. Károly (karcsi_4), Bajáról, 2025. dec. 13-án megnyert egy iPhone 14-et.
+                  </p>
+                </div>
+                <div>
+                  <strong>2. Bankkártya adatok</strong>
+                  <p>
+                    Nem gyűjtünk és nem tárolunk kártyaadatokat. Modern banki technológiát használunk (pl. QR-kódos vagy linkes jóváhagyás),
+                    ahol a felhasználó a saját, publikusnak tekinthető bankszámlaszámára küldött beszedési megbízást fogadja el vagy utasítja el.
+                    Így a befizetésről a felhasználó dönt, anélkül hogy érzékeny adatot adna meg.
+                  </p>
+                </div>
+                <div>
+                  <strong>Név egybeesés</strong>
+                  <p>
+                    A részvétel a nyertesek listájában nem kötelező, de további 20 NEED-del honoráljuk. Előre is megértést kérünk minden „Okos Tamás”, „Bölcs Elemér”,
+                    „Zseni Zsuzsi” vagy „Tudós Tünde” nevű játékosunktól. A karakterek nevét idézőjelbe tesszük, mert nem célunk valódi nevekkel viccelődni.
+                    Egy esetleges névegyezés miatti kellemetlenséget a rendszer figyel és további kompenzációt nyújt nyeremény esetén.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
