@@ -188,10 +188,10 @@ export default function RegisterPage() {
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
                     ref={modelViewerRef}
-                    src={`${avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc}`}
+                    src={character ? `/avatars/${character}.glb` : (avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc)}
                     camera-controls
                     auto-rotate
-                    {...(avatarGender === 'boy' ? { autoplay: true } : {})}
+                    // Base character GLBs: no autoplay by default
                     exposure="1"
                     interaction-prompt="none"
                     disable-pan
