@@ -24,36 +24,76 @@ export default function RegisterPage() {
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
   const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.glb');
+  const [overrideSrc, setOverrideSrc] = useState<string | null>(null);
 
   const playWave = () => {
     const mv = modelViewerRef.current as any;
     if (!mv) return;
     try {
-      if (avatarGender === 'girl') {
-        // Swap to waving clip source, then play and revert when finished
-        const onLoaded = () => {
-          // play once (disable looping)
+      // Build candidate list in priority order
+      const baseWhenNoCharacter = avatarGender === 'girl' ? '/avatars/female.glb' : '/avatars/male.glb';
+      const baseSrc = character ? `/avatars/${character}.glb` : baseWhenNoCharacter;
+
+      const candidates: string[] = character
+        ? [
+            `/avatars/${character}_w_d.glb`,
+            `/avatars/${character}_w.glb`,
+            baseSrc,
+          ]
+        : (
+            avatarGender === 'girl'
+              ? ['/avatars/female_w_d.glb', '/avatars/female_w.glb', '/avatars/female.glb']
+              : ['/avatars/male_w_d.glb', '/avatars/male_w.glb', '/avatars/male.glb']
+          );
+
+      let idx = 0;
+      let onLoad: any;
+      let onError: any;
+      let onFinished: any;
+
+      const cleanupLoad = () => {
+        try { mv.removeEventListener?.('load', onLoad); } catch {}
+        try { mv.removeEventListener?.('error', onError); } catch {}
+      };
+      const cleanupAll = () => {
+        cleanupLoad();
+        try { mv.removeEventListener?.('finished', onFinished); } catch {}
+      };
+
+      const tryNext = () => {
+        if (idx >= candidates.length) {
+          cleanupAll();
+          setOverrideSrc(null); // revert to base
+          return;
+        }
+        const nextSrc = candidates[idx++];
+        setOverrideSrc(nextSrc);
+
+        onLoad = () => {
           try { mv.animationLoop = false; } catch {}
           try { mv.currentTime = 0; } catch {}
           try { mv.play?.(); } catch {}
+          cleanupLoad();
+          // When finished, revert to base
+          onFinished = () => {
+            cleanupAll();
+            setOverrideSrc(null);
+            try { mv.animationLoop = true; } catch {}
+          };
+          mv.addEventListener?.('finished', onFinished, { once: true });
         };
-        const onFinished = () => {
-          setGirlSrc('/avatars/female.glb');
-          try { mv.animationLoop = true; } catch {}
-          try {
-            mv.removeEventListener?.('finished', onFinished);
-          } catch {}
+
+        onError = () => {
+          // Current candidate failed to load; move to the next
+          cleanupLoad();
+          tryNext();
         };
-        setGirlSrc('/avatars/female_waving.glb');
-        // Attach listeners once the new src loads
-        mv.addEventListener?.('load', onLoaded, { once: true });
-        mv.addEventListener?.('finished', onFinished, { once: true });
-      } else {
-        // Boy: just ensure restart
-        if (typeof mv.pause === 'function') mv.pause();
-        try { mv.currentTime = 0; } catch {}
-        if (typeof mv.play === 'function') mv.play();
-      }
+
+        mv.addEventListener?.('load', onLoad, { once: true });
+        mv.addEventListener?.('error', onError, { once: true });
+      };
+
+      tryNext();
     } catch {}
   };
 
@@ -188,7 +228,7 @@ export default function RegisterPage() {
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
                     ref={modelViewerRef}
-                    src={character ? `/avatars/${character}.glb` : (avatarGender === 'boy' ? '/avatars/male.draco.glb' : girlSrc)}
+                    src={overrideSrc ?? (character ? `/avatars/${character}.glb` : (avatarGender === 'boy' ? '/avatars/male.glb' : girlSrc))}
                     camera-controls
                     auto-rotate
                     // Base character GLBs: no autoplay by default
