@@ -178,10 +178,10 @@ export default function RegisterPage() {
               required
             >
               <option value="">-- Válassz --</option>
-              <option value="okos_toni">"Okos Tóni"</option>
-              <option value="bolcs_elemer">"Bölcs Elemér"</option>
-              <option value="zseni_zsuzsi">"Zseni Zsuzsi"</option>
-              <option value="tudos_tundi">"Tudós Tündi"</option>
+              <option value="okos_toni">„Okos Tóni”</option>
+              <option value="bolcs_elemer">„Bölcs Elemér”</option>
+              <option value="zseni_zsuzsi">„Zseni Zsuzsi”</option>
+              <option value="tudos_tundi">„Tudós Tündi”</option>
             </select>
             {avatarGender && (
               <div className="mt-3">
