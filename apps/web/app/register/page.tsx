@@ -15,7 +15,6 @@ export default function RegisterPage() {
   const [postalCode, setPostalCode] = useState('');
   const country = 'Hungary';
   const [avatarName, setAvatarName] = useState('');
-  const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
   // Új: karakter választás (4 fix opció)
   type CharacterKey = '' | 'okos_toni' | 'bolcs_elemer' | 'zseni_zsuzsi' | 'tudos_tundi';
   const [character, setCharacter] = useState<CharacterKey>('');
@@ -23,109 +22,43 @@ export default function RegisterPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
-  const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.glb');
+  // Ideiglenes forrás felülírás az animáció lejátszásához (pl. Zseni Zsuzsi integetés)
   const [overrideSrc, setOverrideSrc] = useState<string | null>(null);
 
   const playWave = () => {
     const mv = modelViewerRef.current as any;
     if (!mv) return;
     try {
-      // Build candidate list in priority order
-      const baseWhenNoCharacter = avatarGender === 'girl' ? '/avatars/female.glb' : '/avatars/male.glb';
-      const baseSrc = character ? `/avatars/${character}.glb` : baseWhenNoCharacter;
-
-      const candidates: string[] = character
-        ? [
-            `/avatars/${character}_w_d.glb`,
-            `/avatars/${character}_w.glb`,
-            baseSrc,
-          ]
-        : (
-            avatarGender === 'girl'
-              ? ['/avatars/female_w_d.glb', '/avatars/female_w.glb', '/avatars/female.glb']
-              : ['/avatars/male_w_d.glb', '/avatars/male_w.glb', '/avatars/male.glb']
-          );
-
-      let idx = 0;
-      let onLoad: any;
-      let onError: any;
-      let onFinished: any;
-
-      const cleanupLoad = () => {
-        try { mv.removeEventListener?.('load', onLoad); } catch {}
-        try { mv.removeEventListener?.('error', onError); } catch {}
-      };
-      const cleanupAll = () => {
-        cleanupLoad();
-        try { mv.removeEventListener?.('finished', onFinished); } catch {}
-      };
-
-      const tryNext = () => {
-        if (idx >= candidates.length) {
-          cleanupAll();
-          setOverrideSrc(null); // revert to base
-          return;
-        }
-        const nextSrc = candidates[idx++];
-        setOverrideSrc(nextSrc);
-
-        onLoad = () => {
+      // Dedikált integetés csak Zseni Zsuzsihoz
+      if (character === 'zseni_zsuzsi') {
+        const onLoad = () => {
           try { mv.animationLoop = false; } catch {}
           try { mv.currentTime = 0; } catch {}
           try { mv.play?.(); } catch {}
-          cleanupLoad();
-          // When finished, revert to base
-          onFinished = () => {
-            cleanupAll();
-            setOverrideSrc(null);
-            try { mv.animationLoop = true; } catch {}
-          };
+          mv.removeEventListener?.('load', onLoad);
           mv.addEventListener?.('finished', onFinished, { once: true });
         };
-
-        onError = () => {
-          // Current candidate failed to load; move to the next
-          cleanupLoad();
-          tryNext();
+        const onFinished = () => {
+          setOverrideSrc(null); // vissza az alap glb-re
+          try { mv.animationLoop = true; } catch {}
         };
-
+        setOverrideSrc('/avatars/zseni_zsuzsi_w.glb');
         mv.addEventListener?.('load', onLoad, { once: true });
-        mv.addEventListener?.('error', onError, { once: true });
-      };
-
-      tryNext();
+        return;
+      }
+      // Más karakter: alapanimáció újraindítása
+      if (typeof mv.pause === 'function') mv.pause();
+      try { mv.currentTime = 0; } catch {}
+      if (typeof mv.play === 'function') mv.play();
     } catch {}
   };
 
-  // Ensure girl does not autoplay: pause once the model loads/changes
+  // Karakter váltáskor mindig tisztítsuk az override-ot, hogy újratöltse az alap GLB-t
   useEffect(() => {
-    const mv = modelViewerRef.current as any;
-    if (!mv) return;
-    if (avatarGender === 'girl') {
-      // When element upgrades/loads, pause to avoid any default playback
-      const pauseNow = () => { try { mv.pause?.(); } catch {} };
-      pauseNow();
-      mv.addEventListener?.('load', pauseNow, { once: true });
-      return () => {
-        try { mv.removeEventListener?.('load', pauseNow); } catch {}
-      };
-    }
-  }, [avatarGender]);
-
-  // Reset girl's default src when gender changes to girl
-  useEffect(() => {
-    if (avatarGender === 'girl') setGirlSrc('/avatars/female.glb');
-  }, [avatarGender]);
-
-  // Karakter -> avatarGender származtatás (csak megjelenítéshez és payloadhoz)
-  useEffect(() => {
-    if (!character) {
-      setAvatarGender('');
-      return;
-    }
-    const female = character === 'zseni_zsuzsi' || character === 'tudos_tundi';
-    setAvatarGender(female ? 'girl' : 'boy');
+    setOverrideSrc(null);
   }, [character]);
+
+  // (Nincs szükség avatarGender állapotra; a 4 fix karakter a forrás.)
 
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
@@ -223,12 +156,13 @@ export default function RegisterPage() {
               <option value="zseni_zsuzsi">„Zseni Zsuzsi”</option>
               <option value="tudos_tundi">„Tudós Tündi”</option>
             </select>
-            {avatarGender && (
+            {character && (
               <div className="mt-3">
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
+                    key={(overrideSrc ?? `/avatars/${character}.glb`)}
                     ref={modelViewerRef}
-                    src={overrideSrc ?? (character ? `/avatars/${character}.glb` : (avatarGender === 'boy' ? '/avatars/male.glb' : girlSrc))}
+                    src={overrideSrc ?? `/avatars/${character}.glb`}
                     camera-controls
                     auto-rotate
                     // Base character GLBs: no autoplay by default
@@ -240,7 +174,7 @@ export default function RegisterPage() {
                     min-camera-orbit="auto 90deg auto"
                     max-camera-orbit="auto 90deg auto"
                   />
-                  {avatarGender === 'girl' && (
+                  {character === 'zseni_zsuzsi' && (
                     <button
                       type="button"
                       onClick={playWave}
