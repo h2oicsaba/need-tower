@@ -150,19 +150,21 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Bal oszlop: Neved a játékban, karakter választás, előnézet */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Neved a játékban</label>
+            <label className="mb-1 block text-sm font-medium">Neved a játékban*</label>
             <input
               className="mb-2 w-full border p-2"
               type="text"
               placeholder="Megjelenített név"
               value={avatarName}
               onChange={(e) => setAvatarName(e.target.value)}
+              required
             />
-            <label className="mb-1 block text-sm font-medium">Válassz karaktert</label>
+            <label className="mb-1 block text-sm font-medium">Válassz karaktert*</label>
             <select
               className="mb-2 w-full border p-2"
               value={character}
               onChange={(e) => setCharacter(e.target.value as CharacterKey)}
+              required
             >
               <option value="">-- Válassz --</option>
               <option value="okos_toni">Okos Tóni</option>
@@ -206,34 +208,32 @@ export default function RegisterPage() {
 
           {/* Jobb oszlop: kötelező személyes mezők + belépési adatok */}
           <div>
+            <label className="mb-1 block text-sm font-medium">Név</label>
             <div className="mb-2 flex gap-2">
               <input
                 className="w-1/2 border p-2"
                 type="text"
-                placeholder="Vezetéknév*"
+                placeholder="Vezetéknév"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                required
               />
               <input
                 className="w-1/2 border p-2"
                 type="text"
-                placeholder="Keresztnév*"
+                placeholder="Keresztnév"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                required
               />
             </div>
-            <label className="mb-1 block text-sm font-medium">Cím*</label>
+            <label className="mb-1 block text-sm font-medium">Cím</label>
             <input
               className="mb-2 w-full border p-2"
               type="text"
               placeholder="Utca, házszám"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              required
             />
-            <label className="mb-1 block text-sm font-medium">Város*</label>
+            <label className="mb-1 block text-sm font-medium">Település*</label>
             <input
               className="mb-2 w-full border p-2"
               type="text"
@@ -242,7 +242,8 @@ export default function RegisterPage() {
               onChange={(e) => setCity(e.target.value)}
               required
             />
-            <label className="mb-1 block text-sm font-medium">Irányítószám*</label>
+            <div className="-mt-1 mb-2 text-xs text-gray-600">Város – község – falu</div>
+            <label className="mb-1 block text-sm font-medium">Irányítószám</label>
             <input
               className="mb-2 w-full border p-2"
               type="text"
@@ -251,7 +252,6 @@ export default function RegisterPage() {
               onChange={(e) => setPostalCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
               inputMode="numeric"
               pattern="[0-9]{4}"
-              required
             />
             <label className="mb-1 block text-sm font-medium">Ország*</label>
             <select

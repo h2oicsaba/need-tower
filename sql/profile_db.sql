@@ -6,21 +6,21 @@ BEGIN;
 DROP TABLE IF EXISTS public.profiles CASCADE;
 CREATE TABLE public.profiles (
   user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  first_name text NOT NULL,
-  last_name text NOT NULL,
-  address text NOT NULL,
+  first_name text,
+  last_name text,
+  address text,
   city text NOT NULL,
-  postal_code text NOT NULL,
+  postal_code text,
   country text NOT NULL DEFAULT 'Hungary',
-  avatar_name text,
-  character_key text,
+  avatar_name text NOT NULL,
+  character_key text NOT NULL,
   avatar_handle text UNIQUE,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT profiles_country_chk CHECK (country = 'Hungary'),
-  CONSTRAINT profiles_postal_code_chk CHECK (postal_code ~ '^[0-9]{4}$'),
+  CONSTRAINT profiles_postal_code_chk CHECK (postal_code IS NULL OR postal_code ~ '^[0-9]{4}$'),
   CONSTRAINT profiles_character_key_chk CHECK (
-    character_key IS NULL OR character_key IN ('okos_toni','bolcs_elemer','zseni_zsuzsi','tudos_tundi')
+    character_key IN ('okos_toni','bolcs_elemer','zseni_zsuzsi','tudos_tundi')
   )
 );
 -- Keep updated_at in sync
