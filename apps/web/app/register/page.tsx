@@ -247,12 +247,11 @@ export default function RegisterPage() {
             <input
               className="mb-2 w-full border p-2"
               type="text"
-              placeholder="Település"
+              placeholder="Város – község – falu"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               required
             />
-            <div className="-mt-1 mb-2 text-xs text-gray-600">Város – község – falu</div>
             <label className="mb-1 block text-sm font-medium">Irányítószám</label>
             <input
               className="mb-2 w-full border p-2"
@@ -328,12 +327,13 @@ export default function RegisterPage() {
                 <div>
                   <strong>1. Kötelező adatok</strong>
                   <p>
-                    Az egyszerű regisztráció érdekében csak egy nevet, egy karaktert és az email címedet/jelszavadat kell megadnod –
-                    a település is fontos, hogy barátokra találj, mert azt követjük a felületen. Egyértelművé tesszük, hogy nem adatgyűjtés történik
+                    Az egyszerű regisztráció érdekében csak egy becenevet, az email címedet/jelszavadat kell megadnod, majd egy karaktert kell választanod–
+                    a település is fontos, hogy barátokra találj, mert ezt követjük a felületen. Egyértelművé tesszük, hogy nem adatgyűjtés történik
                     (cím és teljes név), ezeket majd csak akkor kell megadnod, ha sikerült elsőként feljutnod a toronyba és postáznunk kell neked a terméket.
                     Addig anonim maradhatsz. A GDPR törvényeket tiszteletben tartva később nyilatkozhatsz, hogy szeretnél-e megjelenni egy fotóval az átvett
                     nyereménnyel. Ez azért fontos, hogy mindenki lássa: nem kamu az oldal; bárki, aki ügyes stratégiát választ és elsőként jut fel a toronyba,
                     megilleti az értékes nyeremény. A családneved ekkor is titkos marad. Példa: A. Károly (karcsi_4), Bajáról, 2025. dec. 13-án megnyert egy iPhone 14-et.
+                    A részvétel a nyertesek listájában nem kötelező, de további 30 NEED-del honoráljuk.
                   </p>
                 </div>
                 <div>
@@ -347,9 +347,9 @@ export default function RegisterPage() {
                 <div>
                   <strong>Név egybeesés</strong>
                   <p>
-                    A részvétel a nyertesek listájában nem kötelező, de további 20 NEED-del honoráljuk. Előre is megértést kérünk minden „Okos Tamás”, „Bölcs Elemér”,
-                    „Zseni Zsuzsi” vagy „Tudós Tünde” nevű játékosunktól. A karakterek nevét idézőjelbe tesszük, mert nem célunk valódi nevekkel viccelődni.
-                    Egy esetleges névegyezés miatti kellemetlenséget a rendszer figyel és további kompenzációt nyújt nyeremény esetén.
+                    Előre is megértést kérünk minden „Okos Tamás”, „Bölcs Elemér”,
+                    „Zseni Zsuzsa” vagy „Tudós Tünde” nevű játékosunktól. A karakterek nevét idézőjelbe tettük, mert nem célunk valódi nevekkel viccelődni.
+                    Egy esetleges névegyezés miatti kellemetlenséget a rendszer figyel és további kompenzációt nyújt nyeremény esetén. 30 NEED-et ajándékozunk.
                   </p>
                 </div>
               </div>
