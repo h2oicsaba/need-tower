@@ -13,13 +13,15 @@ CREATE TABLE public.profiles (
   postal_code text NOT NULL,
   country text NOT NULL DEFAULT 'Hungary',
   avatar_name text,
-  avatar_gender text,
+  character_key text,
   avatar_handle text UNIQUE,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT profiles_country_chk CHECK (country = 'Hungary'),
   CONSTRAINT profiles_postal_code_chk CHECK (postal_code ~ '^[0-9]{4}$'),
-  CONSTRAINT profiles_avatar_gender_chk CHECK (avatar_gender IS NULL OR avatar_gender IN ('boy','girl'))
+  CONSTRAINT profiles_character_key_chk CHECK (
+    character_key IS NULL OR character_key IN ('okos_toni','bolcs_elemer','zseni_zsuzsi','tudos_tundi')
+  )
 );
 -- Keep updated_at in sync
 CREATE OR REPLACE FUNCTION public.set_updated_at()

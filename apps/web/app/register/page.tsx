@@ -16,6 +16,9 @@ export default function RegisterPage() {
   const country = 'Hungary';
   const [avatarName, setAvatarName] = useState('');
   const [avatarGender, setAvatarGender] = useState<'boy' | 'girl' | ''>('');
+  // Új: karakter választás (4 fix opció)
+  type CharacterKey = '' | 'okos_toni' | 'bolcs_elemer' | 'zseni_zsuzsi' | 'tudos_tundi';
+  const [character, setCharacter] = useState<CharacterKey>('');
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
   const [girlSrc, setGirlSrc] = useState<string>('/avatars/female.glb');
@@ -72,6 +75,16 @@ export default function RegisterPage() {
     if (avatarGender === 'girl') setGirlSrc('/avatars/female.glb');
   }, [avatarGender]);
 
+  // Karakter -> avatarGender származtatás (csak megjelenítéshez és payloadhoz)
+  useEffect(() => {
+    if (!character) {
+      setAvatarGender('');
+      return;
+    }
+    const female = character === 'zseni_zsuzsi' || character === 'tudos_tundi';
+    setAvatarGender(female ? 'girl' : 'boy');
+  }, [character]);
+
   // Load <model-viewer> web component only on client for avatar preview
   useEffect(() => {
     const el = document.createElement('script');
@@ -101,7 +114,7 @@ export default function RegisterPage() {
       postal_code: postalCode || null,
       country: country,
       avatar_name: avatarName || null,
-      avatar_gender: avatarGender || null,
+      character_key: character || null,
     } as const;
 
     if (session?.user) {
@@ -135,9 +148,9 @@ export default function RegisterPage() {
         <h1 className="mb-6 text-2xl font-bold">Regisztráció</h1>
         {message && <p className="mb-4 text-red-500">{message}</p>}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Bal oszlop: Avatar név, nem, előnézet */}
+          {/* Bal oszlop: Neved a játékban, karakter választás, előnézet */}
           <div>
-            <label className="mb-1 block text-sm font-medium">Avatar név</label>
+            <label className="mb-1 block text-sm font-medium">Neved a játékban</label>
             <input
               className="mb-2 w-full border p-2"
               type="text"
@@ -145,15 +158,17 @@ export default function RegisterPage() {
               value={avatarName}
               onChange={(e) => setAvatarName(e.target.value)}
             />
-            <label className="mb-1 block text-sm font-medium">Avatar nem</label>
+            <label className="mb-1 block text-sm font-medium">Válassz karaktert</label>
             <select
               className="mb-2 w-full border p-2"
-              value={avatarGender}
-              onChange={(e) => setAvatarGender(e.target.value as 'boy' | 'girl')}
+              value={character}
+              onChange={(e) => setCharacter(e.target.value as CharacterKey)}
             >
-              <option value="">Válassz avatar nemet</option>
-              <option value="boy">Fiú</option>
-              <option value="girl">Lány</option>
+              <option value="">-- Válassz --</option>
+              <option value="okos_toni">Okos Tóni</option>
+              <option value="bolcs_elemer">Bölcs Elemér</option>
+              <option value="zseni_zsuzsi">Zseni Zsuzsi</option>
+              <option value="tudos_tundi">Tudós Tündi</option>
             </select>
             {avatarGender && (
               <div className="mt-3">
