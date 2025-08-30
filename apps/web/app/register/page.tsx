@@ -22,41 +22,28 @@ export default function RegisterPage() {
   const [showInfo, setShowInfo] = useState(false);
   const [message, setMessage] = useState('');
   const modelViewerRef = useRef<any>(null);
-  // Ideiglenes forrás felülírás az animáció lejátszásához (pl. Zseni Zsuzsi integetés)
-  const [overrideSrc, setOverrideSrc] = useState<string | null>(null);
+  // Az aktuálisan megjelenítendő modell forrása: ha van _w.glb, azt használjuk
+  const effectiveSrc = character
+    ? (character === 'zseni_zsuzsi' ? '/avatars/zseni_zsuzsi_w.glb' : `/avatars/${character}.glb`)
+    : '';
 
   const playWave = () => {
     const mv = modelViewerRef.current as any;
     if (!mv) return;
     try {
-      // Dedikált integetés csak Zseni Zsuzsihoz
-      if (character === 'zseni_zsuzsi') {
-        const onLoad = () => {
-          try { mv.animationLoop = false; } catch {}
-          try { mv.currentTime = 0; } catch {}
-          try { mv.play?.(); } catch {}
-          mv.removeEventListener?.('load', onLoad);
-          mv.addEventListener?.('finished', onFinished, { once: true });
-        };
-        const onFinished = () => {
-          setOverrideSrc(null); // vissza az alap glb-re
-          try { mv.animationLoop = true; } catch {}
-        };
-        setOverrideSrc('/avatars/zseni_zsuzsi_w.glb');
-        mv.addEventListener?.('load', onLoad, { once: true });
-        return;
-      }
-      // Más karakter: alapanimáció újraindítása
-      if (typeof mv.pause === 'function') mv.pause();
+      // Az integetés ugyanabban a modellben van: csak játsszuk le
+      try { mv.animationLoop = false; } catch {}
       try { mv.currentTime = 0; } catch {}
-      if (typeof mv.play === 'function') mv.play();
+      try { mv.play?.(); } catch {}
+      const onFinished = () => {
+        try { mv.animationLoop = true; } catch {}
+        try { mv.removeEventListener?.('finished', onFinished); } catch {}
+      };
+      mv.addEventListener?.('finished', onFinished, { once: true });
     } catch {}
   };
 
-  // Karakter váltáskor mindig tisztítsuk az override-ot, hogy újratöltse az alap GLB-t
-  useEffect(() => {
-    setOverrideSrc(null);
-  }, [character]);
+  // Nincs külön override; karakter váltáskor a key/src cseréje miatt újratölt a modell
 
   // (Nincs szükség avatarGender állapotra; a 4 fix karakter a forrás.)
 
@@ -160,9 +147,9 @@ export default function RegisterPage() {
               <div className="mt-3">
                 <div className="flex flex-col items-center gap-2">
                   <model-viewer
-                    key={(overrideSrc ?? `/avatars/${character}.glb`)}
+                    key={effectiveSrc}
                     ref={modelViewerRef}
-                    src={overrideSrc ?? `/avatars/${character}.glb`}
+                    src={effectiveSrc}
                     camera-controls
                     auto-rotate
                     // Base character GLBs: no autoplay by default
