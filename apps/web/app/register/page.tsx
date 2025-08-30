@@ -165,7 +165,7 @@ export default function RegisterPage() {
             <input
               className="mb-2 w-full border p-2"
               type="text"
-              placeholder="Megjelenített név"
+              placeholder="Becenév"
               value={avatarName}
               onChange={(e) => setAvatarName(e.target.value)}
               required
